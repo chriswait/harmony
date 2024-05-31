@@ -38,7 +38,7 @@ const Beat = ({ chord, onChange }: {
 }
 
 const App = () => {
-  const { setChord, measures, beatsPerMeasure, setBeatsPerMeasure } = useSong();
+  const { setChord, sectionMeasures, sectionNames, setSectionNames, setSectionName, beatsPerMeasure, setBeatsPerMeasure } = useSong();
   const [inputBeatsPerMeasure, setInputBeatsPerMeasure] = useState(beatsPerMeasure.toString());
   const isMd = useMediaQuery({ query: '(min-width: 776px)' })
 
@@ -53,33 +53,42 @@ const App = () => {
           onBlur={() => Number.isInteger(inputBeatsPerMeasure) ? setBeatsPerMeasure(parseInt(inputBeatsPerMeasure, 10)) : undefined}
         />
       </div>
-      <div style={{
-        border: '1px solid lightgrey',
-        display: 'grid',
-        gridTemplateColumns: `repeat(${isMd ? 4 : 2}, 1fr)`,
-        gridTemplateRows: 'auto',
-      }}>
-        {measures.map((chordBeats, measureIndex) => (
-          <div
-            key={`measure-${measureIndex}`}
-            style={{
-              border: '1px solid black',
+      {sectionNames.map((sectionName, sectionIndex) => {
+        const measures = sectionMeasures[sectionIndex];
+        return (
+          <div style={{ marginBottom: '1rem' }}>
+            <input value={sectionName} onChange={(event) => setSectionName(sectionIndex, event.target.value)} />
+            <div style={{
+              border: '1px solid lightgrey',
               display: 'grid',
-              gridTemplateColumns: `repeat(${beatsPerMeasure}, 1fr)`,
-            }}
-          >
-            {chordBeats.map((chord, beatIndex) => (
-              <Beat
-                chord={chord}
-                key={`beat-${beatIndex}`}
-                onChange={(chordName) => {
-                  setChord(measureIndex, beatIndex, chordName);
-                }}
-              />
-            ))}
+              gridTemplateColumns: `repeat(${isMd ? 4 : 2}, 1fr)`,
+              gridTemplateRows: 'auto',
+            }}>
+              {measures.map((chordBeats, measureIndex) => (
+                <div
+                  key={`measure-${measureIndex}`}
+                  style={{
+                    border: '1px solid black',
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(${beatsPerMeasure}, 1fr)`,
+                  }}
+                >
+                  {chordBeats.map((chord, beatIndex) => (
+                    <Beat
+                      chord={chord}
+                      key={`beat-${beatIndex}`}
+                      onChange={(chordName) => {
+                        setChord(sectionIndex, measureIndex, beatIndex, chordName);
+                      }}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
+        )
+      })}
+      <button onClick={() => setSectionNames([...sectionNames, ''])}>Add Section +</button >
     </>
   );
 }

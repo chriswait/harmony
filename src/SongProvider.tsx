@@ -3,22 +3,28 @@ import { ChordBeatType } from './types';
 
 const SongContext = createContext<{
   chords: ChordBeatType[], setChords: Dispatch<SetStateAction<ChordBeatType[]>>,
-  measures: ChordBeatType[][],
+  sectionMeasures: ChordBeatType[][][],
+  sectionNames: string[], setSectionNames: Dispatch<SetStateAction<string[]>>
+  setSectionName: (sectionIndex: number, sectionName: string) => void;
   beatsPerMeasure: number, setBeatsPerMeasure: Dispatch<SetStateAction<number>>,
-  setChord: (measure: number, beat: number, chordName: string) => void,
+  setChord: (section: number, measure: number, beat: number, chordName: string) => void,
 }>({
   chords: [], setChords: () => { },
-  measures: [],
+  sectionMeasures: [],
+  sectionNames: ['Intro'], setSectionNames: () => { },
+  setSectionName: () => { },
   beatsPerMeasure: 0, setBeatsPerMeasure: () => { },
   setChord: () => { }
 });
 
 const SongProvider = ({ children }: { children: React.ReactNode }) => {
   const [beatsPerMeasure, setBeatsPerMeasure] = useState<number>(4);
+  const [sectionNames, setSectionNames] = useState(['Intro']);
   const [chords, setChords] = useState<ChordBeatType[]>([
     {
       name: 'C',
       timing: {
+        section: 0,
         measure: 0,
         beat: 0,
       }
@@ -26,6 +32,7 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     {
       name: 'F',
       timing: {
+        section: 0,
         measure: 0,
         beat: 2,
       }
@@ -33,6 +40,7 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     {
       name: 'G',
       timing: {
+        section: 0,
         measure: 0,
         beat: 3,
       }
@@ -40,14 +48,15 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     {
       name: 'C',
       timing: {
+        section: 0,
         measure: 1,
         beat: 0,
       }
     },
   ]);
 
-  const setChord = (measure: number, beat: number, chordName: string) => {
-    const matchChord = (chord: ChordBeatType) => !!chord.timing && chord.timing.measure === measure && chord.timing.beat === beat;
+  const setChord = (section: number, measure: number, beat: number, chordName: string) => {
+    const matchChord = (chord: ChordBeatType) => !!chord.timing && chord.timing.section === section && chord.timing.measure === measure && chord.timing.beat === beat;
     let newChords = [];
     // Check for an actual match
     const match = chords.find(matchChord);
@@ -59,7 +68,7 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } else {
       // If there's no match, just add the chord
-      newChords = [...chords, { name: chordName, timing: { measure, beat } }];
+      newChords = [...chords, { name: chordName, timing: { section, measure, beat } }];
     }
     newChords.sort((chord1, chord2) => {
       if (chord1.timing!.measure > chord2.timing!.measure) return 1;
@@ -73,27 +82,39 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     setChords(newChords);
   };
 
-  const measures: ChordBeatType[][] = []
-  const maxMeasureIndex = chords[chords.length - 1].timing!.measure + 2;
-  let lastChord;
-  for (let measureIndex = 0; measureIndex < maxMeasureIndex; measureIndex++) {
-    const beats: ChordBeatType[] = [];
-    for (let beatIndex = 0; beatIndex < beatsPerMeasure; beatIndex++) {
-      const match = chords.find(({ timing }) => timing && timing.measure === measureIndex && timing.beat === beatIndex);
-      if (match) {
-        beats.push(match);
-        lastChord = match
-      } else {
-        beats.push({ ...lastChord, timing: undefined })
+  const setSectionName = (sectionIndex: number, sectionName: string) => {
+    setSectionNames(sectionNames.map((name, index) => index === sectionIndex ? sectionName : name));
+  }
+
+  const sectionMeasures: ChordBeatType[][][] = [];
+  for (let sectionIndex = 0; sectionIndex < sectionNames.length; sectionIndex++) {
+    const measures: ChordBeatType[][] = []
+    const sectionChords = chords.filter(chord => chord.timing?.section === sectionIndex);
+    const lastSectionChord = sectionChords.length === 0 ? undefined : sectionChords[sectionChords.length - 1];
+    const maxMeasureIndex = lastSectionChord ? lastSectionChord.timing!.measure + 2 : 1;
+    let lastChord;
+    for (let measureIndex = 0; measureIndex < maxMeasureIndex; measureIndex++) {
+      const beats: ChordBeatType[] = [];
+      for (let beatIndex = 0; beatIndex < beatsPerMeasure; beatIndex++) {
+        const match = chords.find(({ timing }) => timing && timing.section === sectionIndex && timing.measure === measureIndex && timing.beat === beatIndex);
+        if (match) {
+          beats.push(match);
+          lastChord = match
+        } else {
+          beats.push({ ...lastChord, timing: undefined })
+        }
       }
+      measures.push(beats);
     }
-    measures.push(beats);
+    sectionMeasures.push(measures);
   }
 
   return (
     <SongContext.Provider value={{
       chords, setChords,
-      measures,
+      sectionMeasures,
+      sectionNames, setSectionNames,
+      setSectionName,
       beatsPerMeasure, setBeatsPerMeasure,
       setChord,
     }}>{children}</SongContext.Provider>
