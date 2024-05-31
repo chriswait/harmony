@@ -1,0 +1,38 @@
+Currently our state is a list of measures split into chords. This is very good for rendering because it matches the DOM structure 
+
+This makes it awkward to add a beat in a particular place:
+- we need to find a specific measure to edit, and change the length of the preceeding chord if it's in the same measure
+
+Instead, we could just store a list of chords and which measure and measure-beat they start on
+
+Then build up our measure representation from that
+
+So something like:
+const chords = [
+  {
+    name: 'C',
+    measure: 1,
+    beat: 1,
+  },
+  {
+    name: 'F',
+    measure: 1,
+    beat: 3,
+  },
+  {
+    name: 'G',
+    measure: 1,
+    beat: 4,
+  },
+  {
+    name: 'C',
+    measure: 2,
+    beat: 1,
+  },
+]
+
+- (Keep chords sorted by measure and then beat)
+- Calculate the number of measures to render by looking at the last chord's measure and adding one
+- loop for each measure index:
+  - loop for each beat in the measure
+    - grab all the chords starting in that measure
