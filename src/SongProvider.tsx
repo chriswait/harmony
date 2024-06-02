@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, createContext, useContext, useState } from 'react';
 import fileDownload from 'js-file-download';
 
-import { ChordBeatType, LyricMeasureType, SongExport } from './types';
+import { ChordBeatType, LyricMeasureType, Measure, SongExport } from './types';
 
 const testChords = [
   {
@@ -60,7 +60,7 @@ const SongContext = createContext<{
   artist: string, setArtist: Dispatch<SetStateAction<string>>,
   chords: ChordBeatType[], setChords: Dispatch<SetStateAction<ChordBeatType[]>>,
   lyrics: LyricMeasureType[], setLyrics: Dispatch<SetStateAction<LyricMeasureType[]>>,
-  sectionMeasures: ChordBeatType[][][],
+  sectionMeasures: Measure[][],
   sectionNames: string[], setSectionNames: Dispatch<SetStateAction<string[]>>
   setSectionName: (sectionIndex: number, sectionName: string) => void;
   beatsPerMeasure: number, setBeatsPerMeasure: Dispatch<SetStateAction<number>>,
@@ -155,9 +155,9 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     setLyrics(newLyrics);
   };
 
-  const sectionMeasures: ChordBeatType[][][] = [];
+  const sectionMeasures: Measure[][] = [];
   for (let sectionIndex = 0; sectionIndex < sectionNames.length; sectionIndex++) {
-    const measures: ChordBeatType[][] = []
+    const measures: Measure[] = []
     const sectionChords = chords.filter(chord => chord.timing?.section === sectionIndex);
     const lastSectionChord = sectionChords.length === 0 ? undefined : sectionChords[sectionChords.length - 1];
     const maxMeasureIndex = lastSectionChord ? lastSectionChord.timing!.measure + 2 : 1;
@@ -173,7 +173,8 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
           beats.push({ ...lastChord, timing: undefined })
         }
       }
-      measures.push(beats);
+      const lyric = lyrics.find(({ timing }) => timing?.section === sectionIndex && timing.measure === measureIndex)
+      measures.push({ chordBeats: beats, lyric });
     }
     sectionMeasures.push(measures);
   }

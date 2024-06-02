@@ -61,9 +61,8 @@ const SongGrid = () => {
                 gridTemplateRows: 'auto',
               }}
             >
-              {measures.map((chordBeats, measureIndex) => {
+              {measures.map(({ chordBeats, lyric }, measureIndex) => {
                 const isExtra = chordBeats.filter(({ timing }) => !!timing).length === 0
-                const lyric = lyrics.find(({ timing }) => timing?.section === sectionIndex && timing.measure === measureIndex)
                 return (
                   <div
                     key={`measure-${measureIndex}`}
@@ -147,7 +146,7 @@ const App = () => {
         </div>
         <button onClick={exportSongAsJson}>Export</button>
         <input
-          // accept="application/json"
+          accept="application/json"
           type="file"
           onChange={async (event) => {
             if (event.target.files) {

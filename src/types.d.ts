@@ -1,3 +1,8 @@
+export type Measure = {
+  chordBeats: ChordBeatType[],
+  lyric?: LyricMeasureType,
+}
+
 export type ChordBeatType = {
   name?: string;
   timing?: {
