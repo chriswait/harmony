@@ -1,5 +1,7 @@
 import { Dispatch, SetStateAction, createContext, useContext, useState } from 'react';
-import { ChordBeatType, LyricMeasureType } from './types';
+import fileDownload from 'js-file-download';
+
+import { ChordBeatType, LyricMeasureType, SongExport } from './types';
 
 const testChords = [
   {
@@ -65,7 +67,8 @@ const SongContext = createContext<{
   setChord: (section: number, measure: number, beat: number, chordName: string) => void,
   setLyric: (section: number, measure: number, content: string) => void;
   exportSongAsJson: () => void;
-  importSongFromJson: (jsonData: string) => void;
+  parseImport: (songObjectJson: string) => SongExport | undefined;
+  importSongFromJson: (songObject: SongExport) => void;
 }>({
   songName: '', setSongName: () => { },
   artist: '', setArtist: () => { },
@@ -78,12 +81,13 @@ const SongContext = createContext<{
   setChord: () => { },
   setLyric: () => { },
   exportSongAsJson: () => { },
+  parseImport: () => undefined,
   importSongFromJson: () => { },
 });
 
 const SongProvider = ({ children }: { children: React.ReactNode }) => {
-  const [songName, setSongName] = useState('');
-  const [artist, setArtist] = useState('');
+  const [songName, setSongName] = useState('Electric Feel');
+  const [artist, setArtist] = useState('MGMT');
   const [beatsPerMeasure, setBeatsPerMeasure] = useState<number>(4);
   const [sectionNames, setSectionNames] = useState(['Intro']);
   const [chords, setChords] = useState<ChordBeatType[]>(testChords);
@@ -175,26 +179,32 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const exportSongAsJson = () => {
-    const songExport = JSON.stringify({
+    const songExport: SongExport = {
       songName,
+      artist,
+      lyrics,
       beatsPerMeasure,
       chords,
       sectionNames,
-    })
-    // TODO: write the JSON to a file and download it
-    console.log(songExport);
+    };
+    fileDownload(JSON.stringify(songExport), `${songName}-${artist}.json`);
   }
 
-  const importSongFromJson = (jsonData: string) => {
-    const songObject = JSON.parse(jsonData);
-    if (songObject.songName && songObject.beatsPerMeasure && songObject.chords && songObject.sectionNames) {
-      setSongName(songObject.songName);
-      setBeatsPerMeasure(songObject.beatsPerMeasure);
-      setChords(songObject.chords);
-      setSectionNames(songObject.sectionNames);
-    } else {
-      console.error("Incorrect file format");
+  const parseImport = (songObjectJson: string): SongExport | undefined => {
+    const songObject = JSON.parse(songObjectJson);
+    if (songObject && songObject.songName) {
+      const result: SongExport = songObject;
+      return result;
     }
+  }
+
+  const importSongFromJson = (songObject: SongExport) => {
+    setSongName(songObject.songName);
+    setArtist(songObject.artist);
+    setLyrics(songObject.lyrics)
+    setBeatsPerMeasure(songObject.beatsPerMeasure);
+    setChords(songObject.chords);
+    setSectionNames(songObject.sectionNames);
   }
 
   return (
@@ -210,6 +220,7 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
       setChord,
       setLyric,
       exportSongAsJson,
+      parseImport,
       importSongFromJson,
     }}>{children}</SongContext.Provider>
   );

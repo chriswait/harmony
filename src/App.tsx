@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import './App.css'
 import { useTheme } from './ThemeProvider';
 import { useSong } from './SongProvider';
 import { ChordBeatType } from './types';
+import SongUploadArea from './SongUploadArea';
 
 const Beat = ({ chord, onChange }: {
   chord: ChordBeatType;
@@ -89,7 +90,6 @@ const SongGrid = () => {
                     <input
                       value={lyric?.content ?? ''}
                       onChange={(event) => setLyric(sectionIndex, measureIndex, event.target.value)}
-                      disabled
                       style={{
                         borderLeft: 'none',
                         borderRight: 'none',
@@ -114,12 +114,14 @@ const SongGrid = () => {
 };
 
 const App = () => {
-  const { songName, setSongName, artist, setArtist, beatsPerMeasure, setBeatsPerMeasure, exportSongAsJson } = useSong();
+  const { songName, setSongName, artist, setArtist, beatsPerMeasure, setBeatsPerMeasure, exportSongAsJson, parseImport, importSongFromJson } = useSong();
   const [inputBeatsPerMeasure, setInputBeatsPerMeasure] = useState(beatsPerMeasure.toString());
+  useEffect(() => {
+    setInputBeatsPerMeasure(beatsPerMeasure.toString())
+  }, [beatsPerMeasure]);
   return (
     <>
       <header style={{ marginBottom: '1rem' }}>
-        {/* TODO: handle drag/drop events here and load song from uploaded json */}
         <div style={{ display: 'flex', gap: '1rem', }}>
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block' }}>Song</label>
@@ -139,17 +141,30 @@ const App = () => {
               const parsed = parseInt(inputBeatsPerMeasure, 10);
               if (Number.isInteger(parsed)) {
                 setBeatsPerMeasure(parsed)
-              } else {
-                console.log(inputBeatsPerMeasure)
               }
             }}
           />
         </div>
         <button onClick={exportSongAsJson}>Export</button>
+        <input
+          // accept="application/json"
+          type="file"
+          onChange={async (event) => {
+            if (event.target.files) {
+              const [file] = event.target.files
+              const textContent = await file.text();
+              const songObject = parseImport(textContent);
+              if (songObject) {
+                importSongFromJson(songObject);
+              }
+            }
+          }}
+        />
       </header>
       <main>
         <SongGrid />
       </main>
+      <SongUploadArea />
     </>
   );
 }

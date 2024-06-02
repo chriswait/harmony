@@ -13,3 +13,12 @@ export type LyricMeasureType = {
     measure: number;
   }
 }
+
+export type SongExport = {
+  songName: string;
+  artist: string;
+  chords: ChordBeatType[];
+  lyrics: LyricMeasureType[];
+  sectionNames: string[];
+  beatsPerMeasure: number;
+}
