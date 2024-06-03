@@ -39,25 +39,38 @@ const Beat = ({ chord, onChange }: {
 }
 
 const SongGrid = () => {
-  const { lyrics, setChord, setLyric, sectionMeasures, sectionNames, setSectionNames, setSectionName, beatsPerMeasure } = useSong();
-  const { isMd } = useTheme();
+  const { setChord, setLyric, sectionMeasures, sectionNames, setSectionNames, setSectionName, beatsPerMeasure } = useSong();
+  const { zoom, setZoom } = useTheme();
   return (
     <>
+      <label style={{ display: 'block', marginBottom: '1rem' }}>Zoom
+        <input
+          value={zoom}
+          onChange={(event) => {
+            const intVal = parseInt(event.target.value, 10);
+            setZoom(Math.max(Math.min(intVal, 4), 0))
+          }}
+          type='number'
+          min={0}
+          max={4}
+        />
+      </label>
       {sectionNames.map((sectionName, sectionIndex) => {
         const measures = sectionMeasures[sectionIndex];
         return (
           <div
             key={`section-${sectionIndex}`}
-            style={{ marginBottom: '1rem' }}>
+            style={{ marginBottom: '2rem' }}>
             <input
               value={sectionName}
               onChange={(event) => setSectionName(sectionIndex, event.target.value)}
+              style={{ marginBottom: '1rem' }}
             />
             <div
               style={{
                 border: '1px solid lightgrey',
                 display: 'grid',
-                gridTemplateColumns: `repeat(${isMd ? 4 : 2}, 1fr)`,
+                gridTemplateColumns: `repeat(${Math.pow(2, zoom - 1)}, 1fr)`,
                 gridTemplateRows: 'auto',
               }}
             >
