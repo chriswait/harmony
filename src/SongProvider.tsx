@@ -2,58 +2,7 @@ import { Dispatch, SetStateAction, createContext, useContext, useState } from 'r
 import fileDownload from 'js-file-download';
 
 import { ChordBeatType, LyricMeasureType, Measure, SongExport } from './types';
-
-const testChords = [
-  {
-    name: 'C',
-    timing: {
-      section: 0,
-      measure: 0,
-      beat: 0,
-    }
-  },
-  {
-    name: 'F',
-    timing: {
-      section: 0,
-      measure: 0,
-      beat: 2,
-    }
-  },
-  {
-    name: 'G',
-    timing: {
-      section: 0,
-      measure: 0,
-      beat: 3,
-    }
-  },
-  {
-    name: 'C',
-    timing: {
-      section: 0,
-      measure: 1,
-      beat: 0,
-    }
-  },
-];
-
-const testLyrics = [
-  {
-    content: 'All the leaves are brown',
-    timing: {
-      section: 0,
-      measure: 0,
-    }
-  },
-  {
-    content: 'And the sky is grey',
-    timing: {
-      section: 0,
-      measure: 1,
-    }
-  },
-];
+import { useDatabase } from './DatabaseProvider';
 
 const SongContext = createContext<{
   songName: string, setSongName: Dispatch<SetStateAction<string>>,
@@ -69,6 +18,8 @@ const SongContext = createContext<{
   exportSongAsJson: () => void;
   parseImport: (songObjectJson: string) => SongExport | undefined;
   importSongFromJson: (songObject: SongExport) => void;
+  saveSongToDatabase: () => Promise<void>;
+  initialise: () => void;
 }>({
   songName: '', setSongName: () => { },
   artist: '', setArtist: () => { },
@@ -83,15 +34,18 @@ const SongContext = createContext<{
   exportSongAsJson: () => { },
   parseImport: () => undefined,
   importSongFromJson: () => { },
+  saveSongToDatabase: async () => { },
+  initialise: () => { },
 });
 
 const SongProvider = ({ children }: { children: React.ReactNode }) => {
-  const [songName, setSongName] = useState('Electric Feel');
-  const [artist, setArtist] = useState('MGMT');
+  const { save } = useDatabase();
+  const [songName, setSongName] = useState('');
+  const [artist, setArtist] = useState('');
   const [beatsPerMeasure, setBeatsPerMeasure] = useState<number>(4);
-  const [sectionNames, setSectionNames] = useState(['Intro']);
-  const [chords, setChords] = useState<ChordBeatType[]>(testChords);
-  const [lyrics, setLyrics] = useState<LyricMeasureType[]>(testLyrics);
+  const [sectionNames, setSectionNames] = useState<string[]>([]);
+  const [chords, setChords] = useState<ChordBeatType[]>([]);
+  const [lyrics, setLyrics] = useState<LyricMeasureType[]>([]);
 
   const setChord = (section: number, measure: number, beat: number, chordName: string) => {
     const matchChord = (chord: ChordBeatType) => !!chord.timing && chord.timing.section === section && chord.timing.measure === measure && chord.timing.beat === beat;
@@ -179,17 +133,20 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     sectionMeasures.push(measures);
   }
 
+  const songExport: SongExport = {
+    songName,
+    artist,
+    lyrics,
+    beatsPerMeasure,
+    chords,
+    sectionNames,
+  };
+
   const exportSongAsJson = () => {
-    const songExport: SongExport = {
-      songName,
-      artist,
-      lyrics,
-      beatsPerMeasure,
-      chords,
-      sectionNames,
-    };
     fileDownload(JSON.stringify(songExport), `${songName}-${artist}.json`);
   }
+
+  const saveSongToDatabase = async () => save(songExport);
 
   const parseImport = (songObjectJson: string): SongExport | undefined => {
     const songObject = JSON.parse(songObjectJson);
@@ -208,6 +165,15 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     setSectionNames(songObject.sectionNames);
   }
 
+  const initialise = () => {
+    setSongName('');
+    setArtist('');
+    setLyrics([]);
+    setBeatsPerMeasure(4);
+    setChords([]);
+    setSectionNames([]);
+  }
+
   return (
     <SongContext.Provider value={{
       songName, setSongName,
@@ -223,6 +189,8 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
       exportSongAsJson,
       parseImport,
       importSongFromJson,
+      saveSongToDatabase,
+      initialise
     }}>{children}</SongContext.Provider>
   );
 }

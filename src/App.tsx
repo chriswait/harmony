@@ -5,6 +5,7 @@ import { useTheme } from './ThemeProvider';
 import { useSong } from './SongProvider';
 import { ChordBeatType } from './types';
 import SongUploadArea from './SongUploadArea';
+import { useDatabase } from './DatabaseProvider';
 
 const Beat = ({ chord, onChange }: {
   chord: ChordBeatType;
@@ -125,26 +126,51 @@ const SongGrid = () => {
   )
 };
 
+const SongList = () => {
+  const { songs, selectedSongId, setSelectedSongId } = useDatabase();
+  const { importSongFromJson } = useSong();
+  return (
+    <nav style={{ display: 'flex', gap: '0.5rem' }}>
+      {songs.map((song) =>
+        <button
+          key={`song-${song.id}`}
+          onClick={() => {
+            setSelectedSongId(song.id);
+            importSongFromJson(song.song_data);
+          }}
+          style={{
+            fontWeight: song.id === selectedSongId ? 'bold' : undefined
+          }}
+        >
+          {song.song_data.songName}
+        </button>
+      )}
+    </nav>
+  )
+};
+
 const App = () => {
-  const { songName, setSongName, artist, setArtist, beatsPerMeasure, setBeatsPerMeasure, exportSongAsJson, parseImport, importSongFromJson } = useSong();
+  const { selectedSongId, deleteSong } = useDatabase();
+  const { songName, setSongName, artist, setArtist, beatsPerMeasure, setBeatsPerMeasure, exportSongAsJson, parseImport, importSongFromJson, saveSongToDatabase } = useSong();
   const [inputBeatsPerMeasure, setInputBeatsPerMeasure] = useState(beatsPerMeasure.toString());
   useEffect(() => {
     setInputBeatsPerMeasure(beatsPerMeasure.toString())
   }, [beatsPerMeasure]);
   return (
     <>
-      <header style={{ marginBottom: '1rem' }}>
+      <header style={{ marginBottom: '1rem', display: 'grid', gap: '1rem' }}>
+        <SongList />
         <div style={{ display: 'flex', gap: '1rem', }}>
-          <div style={{ marginBottom: '1rem' }}>
+          <div>
             <label style={{ display: 'block' }}>Song</label>
             <input value={songName} onChange={(event) => setSongName(event.target.value)} />
           </div>
-          <div style={{ marginBottom: '1rem' }}>
+          <div>
             <label style={{ display: 'block' }}>Artist</label>
             <input value={artist} onChange={(event) => setArtist(event.target.value)} />
           </div>
         </div>
-        <div style={{ marginBottom: '1rem' }}>
+        <div>
           <label style={{ display: 'block' }}>Beats Per Measure</label>
           <input
             value={inputBeatsPerMeasure}
@@ -157,22 +183,38 @@ const App = () => {
             }}
           />
         </div>
-        <button onClick={exportSongAsJson}>Export</button>
-        <input
-          accept="application/json"
-          type="file"
-          onChange={async (event) => {
-            if (event.target.files) {
-              const [file] = event.target.files
-              const textContent = await file.text();
-              const songObject = parseImport(textContent);
-              if (songObject) {
-                importSongFromJson(songObject);
-              }
-            }
+        <div
+          style={{
+            // display: 'flex',
+            gap: '0.5rem', display: 'none'
           }}
-        />
+        >
+          <button onClick={exportSongAsJson}>Export</button>
+          <input
+            accept="application/json"
+            type="file"
+            onChange={async (event) => {
+              if (event.target.files) {
+                const [file] = event.target.files
+                const textContent = await file.text();
+                const songObject = parseImport(textContent);
+                if (songObject) {
+                  importSongFromJson(songObject);
+                }
+              }
+            }}
+          />
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', }}>
+          <button onClick={saveSongToDatabase}>Save</button>
+          <button disabled={!selectedSongId} onClick={() => {
+            if (selectedSongId && confirm('Are you sure you want to delete this song?')) {
+              deleteSong(selectedSongId)
+            }
+          }}>Delete</button>
+        </div>
       </header>
+      <hr />
       <main>
         <SongGrid />
       </main>
