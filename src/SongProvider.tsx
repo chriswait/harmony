@@ -7,6 +7,7 @@ import { useDatabase } from './DatabaseProvider';
 const SongContext = createContext<{
   songName: string, setSongName: Dispatch<SetStateAction<string>>,
   artist: string, setArtist: Dispatch<SetStateAction<string>>,
+  key: string, setKey: Dispatch<SetStateAction<string>>,
   chords: ChordBeatType[], setChords: Dispatch<SetStateAction<ChordBeatType[]>>,
   lyrics: LyricMeasureType[], setLyrics: Dispatch<SetStateAction<LyricMeasureType[]>>,
   sectionMeasures: Measure[][],
@@ -23,6 +24,7 @@ const SongContext = createContext<{
 }>({
   songName: '', setSongName: () => { },
   artist: '', setArtist: () => { },
+  key: '', setKey: () => { },
   chords: [], setChords: () => { },
   lyrics: [], setLyrics: () => { },
   sectionMeasures: [],
@@ -42,6 +44,7 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
   const { save } = useDatabase();
   const [songName, setSongName] = useState('');
   const [artist, setArtist] = useState('');
+  const [key, setKey] = useState('');
   const [beatsPerMeasure, setBeatsPerMeasure] = useState<number>(4);
   const [sectionNames, setSectionNames] = useState<string[]>([]);
   const [chords, setChords] = useState<ChordBeatType[]>([]);
@@ -136,8 +139,9 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
   const songExport: SongExport = {
     songName,
     artist,
-    lyrics,
+    key,
     beatsPerMeasure,
+    lyrics,
     chords,
     sectionNames,
   };
@@ -160,6 +164,7 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     setSongName(songObject.songName);
     setArtist(songObject.artist);
     setLyrics(songObject.lyrics)
+    setKey(songObject.key);
     setBeatsPerMeasure(songObject.beatsPerMeasure);
     setChords(songObject.chords);
     setSectionNames(songObject.sectionNames);
@@ -168,8 +173,9 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
   const initialise = () => {
     setSongName('');
     setArtist('');
-    setLyrics([]);
+    setKey('');
     setBeatsPerMeasure(4);
+    setLyrics([]);
     setChords([]);
     setSectionNames([]);
   }
@@ -178,12 +184,13 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     <SongContext.Provider value={{
       songName, setSongName,
       artist, setArtist,
+      key, setKey,
+      beatsPerMeasure, setBeatsPerMeasure,
       chords, setChords,
       lyrics, setLyrics,
       sectionMeasures,
       sectionNames, setSectionNames,
       setSectionName,
-      beatsPerMeasure, setBeatsPerMeasure,
       setChord,
       setLyric,
       exportSongAsJson,

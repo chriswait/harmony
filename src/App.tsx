@@ -14,7 +14,7 @@ import { useSong } from './SongProvider';
 import SongUploadArea from './SongUploadArea';
 
 const App = () => {
-  const { songName, setSongName, artist, setArtist, beatsPerMeasure, setBeatsPerMeasure, } = useSong();
+  const { songName, setSongName, artist, setArtist, key, setKey, beatsPerMeasure, setBeatsPerMeasure, } = useSong();
   const [inputBeatsPerMeasure, setInputBeatsPerMeasure] = useState(beatsPerMeasure.toString());
   useEffect(() => {
     setInputBeatsPerMeasure(beatsPerMeasure.toString())
@@ -37,13 +37,24 @@ const App = () => {
             </Box>
             <Box>
               <FormControl mb={2}>
+                <FormLabel>Key</FormLabel>
+                <Input
+                  value={key}
+                  onChange={(event) => setKey(event.target.value)}
+                />
+              </FormControl>
+              <FormControl mb={2}>
                 <FormLabel>Beats per Measure</FormLabel>
-                <Input value={inputBeatsPerMeasure} onChange={(event) => setInputBeatsPerMeasure(event.target.value)} onBlur={() => {
-                  const parsed = parseInt(inputBeatsPerMeasure, 10);
-                  if (Number.isInteger(parsed)) {
-                    setBeatsPerMeasure(parsed)
-                  }
-                }} />
+                <Input
+                  value={inputBeatsPerMeasure}
+                  onChange={(event) => setInputBeatsPerMeasure(event.target.value)}
+                  onBlur={() => {
+                    const parsed = parseInt(inputBeatsPerMeasure, 10);
+                    if (Number.isInteger(parsed)) {
+                      setBeatsPerMeasure(parsed)
+                    }
+                  }}
+                />
               </FormControl>
             </Box>
           </Flex>

@@ -37,13 +37,11 @@ const NavBar = () => {
             Open
           </IconButton>
           <Spacer />
-          <Box>
-            <SearchIcon mr={2} />
-            <ButtonGroup>
-              <IconButton disabled={zoom === 0} size='sm' aria-label='decrease' icon={<MinusIcon />} onClick={() => setZoom(Math.min(zoom + 1, 3))} />
-              <IconButton disabled={zoom === 3} size='sm' aria-label='increase' icon={<AddIcon />} onClick={() => setZoom(Math.max(zoom - 1, 0))} />
-            </ButtonGroup>
-          </Box>
+          <ButtonGroup isAttached variant='outline' alignItems={'center'} mr={[2, 4, 6]}>
+            <SearchIcon boxSize={5} mr={2} />
+            <IconButton disabled={zoom === 0} size='sm' aria-label='decrease' icon={<MinusIcon />} onClick={() => setZoom(Math.min(zoom + 1, 3))} />
+            <IconButton disabled={zoom === 3} size='sm' aria-label='increase' icon={<AddIcon />} onClick={() => setZoom(Math.max(zoom - 1, 0))} />
+          </ButtonGroup>
           <Button onClick={saveSongToDatabase}>Save</Button>
         </Flex>
       </Container>
@@ -84,7 +82,7 @@ const NavBar = () => {
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
-    </Box>
+    </Box >
   )
 }
 export default NavBar

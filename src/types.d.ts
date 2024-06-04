@@ -22,8 +22,9 @@ export type LyricMeasureType = {
 export type SongExport = {
   songName: string;
   artist: string;
+  key: string;
+  beatsPerMeasure: number;
   chords: ChordBeatType[];
   lyrics: LyricMeasureType[];
   sectionNames: string[];
-  beatsPerMeasure: number;
 }
