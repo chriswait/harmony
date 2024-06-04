@@ -4,9 +4,43 @@ import {
   Grid,
   Input
 } from '@chakra-ui/react';
+
 import Beat from './Beat';
 import { useTheme } from './ThemeProvider';
 import { useSong } from './SongProvider';
+import { useEffect, useRef, useState } from 'react';
+
+const LyricInput = ({ value, onChange }: React.InputHTMLAttributes<HTMLInputElement>) => {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [fontSize, setFontSize] = useState(16);
+  useEffect(() => {
+    if (!inputRef.current) return;
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (entries.length > 0 && value && value.toString().length > 0) {
+        const [entry] = entries;
+        const { inlineSize: width } = entry.borderBoxSize[0];
+        const computedSize = width * 1.5 / value.toString().length;
+        setFontSize(Math.min(computedSize, 16));
+      } else {
+        setFontSize(16);
+      }
+    });
+    resizeObserver.observe(inputRef.current);
+    return () => resizeObserver.disconnect(); // clean up 
+  }, [value]);
+  return (
+    <Input
+      ref={inputRef}
+      value={value}
+      onChange={onChange}
+      borderRadius={0}
+      padding={1}
+      border='none'
+      fontFamily={'monospace'}
+      fontSize={`${fontSize}px`}
+    />
+  );
+}
 
 const SongGrid = () => {
   const { zoom } = useTheme();
@@ -48,13 +82,9 @@ const SongGrid = () => {
                         />
                       ))}
                     </Grid>
-                    <Input
+                    <LyricInput
                       value={lyric?.content ?? ''}
                       onChange={(event) => setLyric(sectionIndex, measureIndex, event.target.value)}
-                      borderRadius={0}
-                      padding={1}
-                      border='none'
-                      fontFamily={'monospace'}
                     />
                   </Box>
                 );
