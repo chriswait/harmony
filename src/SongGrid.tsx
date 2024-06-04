@@ -11,18 +11,19 @@ import { useSong } from './SongProvider';
 import { useEffect, useRef, useState } from 'react';
 
 const LyricInput = ({ value, onChange }: React.InputHTMLAttributes<HTMLInputElement>) => {
+  const MAX_SIZE = 16;
   const inputRef = useRef<HTMLInputElement>(null)
-  const [fontSize, setFontSize] = useState(16);
+  const [fontSize, setFontSize] = useState(MAX_SIZE);
   useEffect(() => {
     if (!inputRef.current) return;
     const resizeObserver = new ResizeObserver((entries) => {
       if (entries.length > 0 && value && value.toString().length > 0) {
         const [entry] = entries;
         const { inlineSize: width } = entry.borderBoxSize[0];
-        const computedSize = width * 1.5 / value.toString().length;
-        setFontSize(Math.min(computedSize, 16));
+        const computedSize = ((width - 8) * 1.65) / value.toString().length;
+        setFontSize(Math.min(computedSize, MAX_SIZE));
       } else {
-        setFontSize(16);
+        setFontSize(MAX_SIZE);
       }
     });
     resizeObserver.observe(inputRef.current);
@@ -38,6 +39,7 @@ const LyricInput = ({ value, onChange }: React.InputHTMLAttributes<HTMLInputElem
       border='none'
       fontFamily={'monospace'}
       fontSize={`${fontSize}px`}
+      transition={'font-size 0.1s linear'}
     />
   );
 }
