@@ -1,3 +1,9 @@
+export type Timing = {
+    section: number;
+    measure: number;
+    beat?: number;
+}
+
 export type Measure = {
   chordBeats: ChordBeatType[];
   lyric?: LyricMeasureType;
@@ -5,18 +11,11 @@ export type Measure = {
 
 export type ChordBeatType = {
   name?: string;
-  timing?: {
-    section: number;
-    measure: number;
-    beat: number;
-  };
+  timing?: Timing;
 };
 export type LyricMeasureType = {
   content: string;
-  timing?: {
-    section: number;
-    measure: number;
-  };
+  timing?: Timing;
 };
 
 export type SongExport = {

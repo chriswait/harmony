@@ -8,8 +8,23 @@ import {
 } from 'react';
 import fileDownload from 'js-file-download';
 
-import { ChordBeatType, LyricMeasureType, Measure, SongExport } from './types';
+import { ChordBeatType, LyricMeasureType, Measure, SongExport, Timing } from './types';
 import { useDatabase } from './DatabaseProvider';
+
+const sortByTiming = (thing1: { timing?: Timing }, thing2: { timing?: Timing }) => {
+  if (thing1.timing!.section > thing2.timing!.section) return 1;
+  if (thing1.timing!.section < thing2.timing!.section) return -1;
+  if (thing1.timing!.section === thing2.timing!.section) {
+    if (thing1.timing!.measure > thing2.timing!.measure) return 1;
+    if (thing1.timing!.measure < thing2.timing!.measure) return -1;
+    if (thing1.timing!.measure === thing2.timing!.measure) {
+      if ((thing1.timing?.beat ?? 0) > (thing2.timing?.beat ?? 0)) return 1;
+      if ((thing1.timing?.beat ?? 0) < (thing2.timing?.beat ?? 0)) return -1;
+      return 0;
+    }
+  }
+  return 0;
+};
 
 const SongContext = createContext<{
   songName: string;
@@ -97,19 +112,7 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
       // If there's no match, just add the chord
       newChords = [...chords, { name: chordName, timing: { section, measure, beat } }];
     }
-    newChords.sort((chord1, chord2) => {
-      if (chord1.timing!.section > chord2.timing!.section) return 1;
-      if (chord1.timing!.section < chord2.timing!.section) return -1;
-      if (chord1.timing!.section === chord2.timing!.section) {
-        if (chord1.timing!.measure > chord2.timing!.measure) return 1;
-        if (chord1.timing!.measure < chord2.timing!.measure) return -1;
-        if (chord1.timing!.measure === chord2.timing!.measure) {
-          if (chord1.timing!.beat > chord2.timing!.beat) return 1;
-          if (chord1.timing!.beat < chord2.timing!.beat) return -1;
-        }
-      }
-      return 0;
-    });
+    newChords.sort(sortByTiming);
     setChords(newChords);
   };
 
@@ -139,15 +142,7 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
       // If there's no match, just add the chord
       newLyrics = [...lyrics, { content, timing: { section, measure } }];
     }
-    newLyrics.sort((lyric1, lyric2) => {
-      if (lyric1.timing!.section > lyric2.timing!.section) return 1;
-      if (lyric1.timing!.section < lyric2.timing!.section) return -1;
-      if (lyric1.timing!.section === lyric2.timing!.section) {
-        if (lyric1.timing!.measure > lyric2.timing!.measure) return 1;
-        if (lyric1.timing!.measure < lyric2.timing!.measure) return -1;
-      }
-      return 0;
-    });
+    newLyrics.sort(sortByTiming);
     setLyrics(newLyrics);
   };
 
