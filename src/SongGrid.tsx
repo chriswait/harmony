@@ -78,7 +78,11 @@ const SongGrid = () => {
               </Button>
             </Flex>
             <Grid
-              gridTemplateColumns={`repeat(${Math.pow(2, zoom)}, 1fr)`}
+              gridTemplateColumns={[
+                `repeat(${Math.pow(2, zoom - 2)}, 1fr)`,
+                `repeat(${Math.pow(2, zoom - 1)}, 1fr)`,
+                `repeat(${Math.pow(2, zoom)}, 1fr)`,
+              ]}
               gridTemplateRows="auto"
               rowGap={2}
               columnGap={1}
