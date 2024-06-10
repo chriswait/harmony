@@ -29,32 +29,35 @@ const SongUploadArea = () => {
     setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback(async (event: DragEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setIsDragging(false);
-    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
-      dragCounter.current = 0;
-      const [file] = event.dataTransfer.files
-      const textContent = await file.text();
-      const songObject = parseImport(textContent);
-      if (songObject) {
-        importSongFromJson(songObject);
+  const handleDrop = useCallback(
+    async (event: DragEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setIsDragging(false);
+      if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+        dragCounter.current = 0;
+        const [file] = event.dataTransfer.files;
+        const textContent = await file.text();
+        const songObject = parseImport(textContent);
+        if (songObject) {
+          importSongFromJson(songObject);
+        }
+        event.dataTransfer.clearData();
       }
-      event.dataTransfer.clearData();
-    }
-  }, [parseImport, importSongFromJson]);
+    },
+    [parseImport, importSongFromJson],
+  );
 
   useEffect(() => {
-    window.addEventListener("dragenter", handleDragEnter);
-    window.addEventListener("dragleave", handleDragLeave);
-    window.addEventListener("dragover", handleDragOver);
-    window.addEventListener("drop", handleDrop);
+    window.addEventListener('dragenter', handleDragEnter);
+    window.addEventListener('dragleave', handleDragLeave);
+    window.addEventListener('dragover', handleDragOver);
+    window.addEventListener('drop', handleDrop);
     return () => {
-      window.removeEventListener("dragenter", handleDragEnter);
-      window.removeEventListener("dragleave", handleDragLeave);
-      window.removeEventListener("dragover", handleDragOver);
-      window.removeEventListener("drop", handleDrop);
+      window.removeEventListener('dragenter', handleDragEnter);
+      window.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('dragover', handleDragOver);
+      window.removeEventListener('drop', handleDrop);
     };
   });
   return isDragging ? (

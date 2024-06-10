@@ -2,10 +2,14 @@ import { Input } from '@chakra-ui/react';
 // import { useTheme } from './ThemeProvider';
 import { ChordBeatType } from './types';
 
-const Beat = ({ chord, onChange, last = false }: {
+const Beat = ({
+  chord,
+  onChange,
+  last = false,
+}: {
   chord: ChordBeatType;
   onChange: (chordName: string) => void;
-  last?: boolean,
+  last?: boolean;
 }) => {
   // const isReal = !!chord?.timing;
   // const { isMd, isLg } = useTheme();
@@ -16,11 +20,11 @@ const Beat = ({ chord, onChange, last = false }: {
       onChange={(event) => onChange(event.target.value)}
       onFocus={(event) => event.target.select()}
       borderRadius={0}
-      borderTop='none'
+      borderTop="none"
       // borderBottom='none'
-      borderLeft='none'
+      borderLeft="none"
       borderRight={last ? 'none' : undefined}
-      textAlign='center'
+      textAlign="center"
       padding={0}
     />
   );

@@ -14,7 +14,7 @@ import {
   Flex,
   IconButton,
   Spacer,
-  useDisclosure
+  useDisclosure,
 } from '@chakra-ui/react';
 import { AddIcon, HamburgerIcon, MinusIcon, SearchIcon } from '@chakra-ui/icons';
 
@@ -33,24 +33,36 @@ const NavBar = () => {
     <Box>
       <Container maxW={'container.xl'} mb={2} p={2}>
         <Flex align={'center'} gap={2}>
-          <IconButton aria-label='menu' ref={btnRef} onClick={onOpen} icon={<HamburgerIcon />} >
+          <IconButton
+            aria-label="menu"
+            ref={btnRef}
+            onClick={onOpen}
+            icon={<HamburgerIcon />}
+          >
             Open
           </IconButton>
           <Spacer />
-          <ButtonGroup isAttached variant='outline' alignItems={'center'} mr={[2, 4, 6]}>
+          <ButtonGroup isAttached variant="outline" alignItems={'center'} mr={[2, 4, 6]}>
             <SearchIcon boxSize={5} mr={2} />
-            <IconButton disabled={zoom === 0} size='sm' aria-label='decrease' icon={<MinusIcon />} onClick={() => setZoom(Math.min(zoom + 1, 3))} />
-            <IconButton disabled={zoom === 3} size='sm' aria-label='increase' icon={<AddIcon />} onClick={() => setZoom(Math.max(zoom - 1, 0))} />
+            <IconButton
+              disabled={zoom === 0}
+              size="sm"
+              aria-label="decrease"
+              icon={<MinusIcon />}
+              onClick={() => setZoom(Math.min(zoom + 1, 3))}
+            />
+            <IconButton
+              disabled={zoom === 3}
+              size="sm"
+              aria-label="increase"
+              icon={<AddIcon />}
+              onClick={() => setZoom(Math.max(zoom - 1, 0))}
+            />
           </ButtonGroup>
           <Button onClick={saveSongToDatabase}>Save</Button>
         </Flex>
       </Container>
-      <Drawer
-        isOpen={isOpen}
-        placement='left'
-        onClose={onClose}
-        finalFocusRef={btnRef}
-      >
+      <Drawer isOpen={isOpen} placement="left" onClose={onClose} finalFocusRef={btnRef}>
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
@@ -74,15 +86,24 @@ const NavBar = () => {
               }}
             /> */}
             <Button onClick={exportSongAsJson}>Export</Button>
-            <Button colorScheme='red' disabled={!selectedSongId} onClick={() => {
-              if (selectedSongId && confirm('Are you sure you want to delete this song?')) {
-                deleteSong(selectedSongId)
-              }
-            }}>Delete Song</Button>
+            <Button
+              colorScheme="red"
+              disabled={!selectedSongId}
+              onClick={() => {
+                if (
+                  selectedSongId &&
+                  confirm('Are you sure you want to delete this song?')
+                ) {
+                  deleteSong(selectedSongId);
+                }
+              }}
+            >
+              Delete Song
+            </Button>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
-    </Box >
-  )
-}
-export default NavBar
+    </Box>
+  );
+};
+export default NavBar;

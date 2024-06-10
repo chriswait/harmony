@@ -1,11 +1,4 @@
-import {
-  Box,
-  Container,
-  Flex,
-  FormControl,
-  FormLabel,
-  Input
-} from '@chakra-ui/react';
+import { Box, Container, Flex, FormControl, FormLabel, Input } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 
 import NavBar from './NavBar';
@@ -14,10 +7,21 @@ import { useSong } from './SongProvider';
 import SongUploadArea from './SongUploadArea';
 
 const App = () => {
-  const { songName, setSongName, artist, setArtist, key, setKey, beatsPerMeasure, setBeatsPerMeasure, } = useSong();
-  const [inputBeatsPerMeasure, setInputBeatsPerMeasure] = useState(beatsPerMeasure.toString());
+  const {
+    songName,
+    setSongName,
+    artist,
+    setArtist,
+    key,
+    setKey,
+    beatsPerMeasure,
+    setBeatsPerMeasure,
+  } = useSong();
+  const [inputBeatsPerMeasure, setInputBeatsPerMeasure] = useState(
+    beatsPerMeasure.toString(),
+  );
   useEffect(() => {
-    setInputBeatsPerMeasure(beatsPerMeasure.toString())
+    setInputBeatsPerMeasure(beatsPerMeasure.toString());
   }, [beatsPerMeasure]);
   return (
     <>
@@ -28,20 +32,24 @@ const App = () => {
             <Box flex={1}>
               <FormControl mb={2}>
                 <FormLabel>Title</FormLabel>
-                <Input size='lg' value={songName} onChange={(event) => setSongName(event.target.value)} />
+                <Input
+                  size="lg"
+                  value={songName}
+                  onChange={(event) => setSongName(event.target.value)}
+                />
               </FormControl>
               <FormControl>
                 <FormLabel>Artist</FormLabel>
-                <Input value={artist} onChange={(event) => setArtist(event.target.value)} />
+                <Input
+                  value={artist}
+                  onChange={(event) => setArtist(event.target.value)}
+                />
               </FormControl>
             </Box>
             <Box>
               <FormControl mb={2}>
                 <FormLabel>Key</FormLabel>
-                <Input
-                  value={key}
-                  onChange={(event) => setKey(event.target.value)}
-                />
+                <Input value={key} onChange={(event) => setKey(event.target.value)} />
               </FormControl>
               <FormControl mb={2}>
                 <FormLabel>Beats per Measure</FormLabel>
@@ -51,7 +59,7 @@ const App = () => {
                   onBlur={() => {
                     const parsed = parseInt(inputBeatsPerMeasure, 10);
                     if (Number.isInteger(parsed)) {
-                      setBeatsPerMeasure(parsed)
+                      setBeatsPerMeasure(parsed);
                     }
                   }}
                 />
@@ -63,11 +71,11 @@ const App = () => {
       <main>
         <Container maxW={'container.lg'} mb={4}>
           <SongGrid />
-        </Container >
+        </Container>
       </main>
       <SongUploadArea />
     </>
   );
-}
+};
 
-export default App
+export default App;
