@@ -88,15 +88,8 @@ const NavBar = () => {
             <Button onClick={exportSongAsJson}>Export</Button>
             <Button
               colorScheme="red"
-              disabled={!selectedSongId}
-              onClick={() => {
-                if (
-                  selectedSongId &&
-                  confirm('Are you sure you want to delete this song?')
-                ) {
-                  deleteSong(selectedSongId);
-                }
-              }}
+              disabled={selectedSongId === undefined}
+              onClick={() => deleteSong(selectedSongId!)}
             >
               Delete Song
             </Button>

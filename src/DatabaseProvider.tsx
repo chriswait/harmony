@@ -54,8 +54,10 @@ const DatabaseProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const deleteSong = async (songId: number) => {
-    await supabase.from(SONG_COLLECTION_NAME).delete().eq('id', songId);
-    await fetchSongs();
+    if (selectedSongId && confirm('Are you sure you want to delete this song?')) {
+      await supabase.from(SONG_COLLECTION_NAME).delete().eq('id', songId);
+      await fetchSongs();
+    }
   };
 
   useEffect(() => {
