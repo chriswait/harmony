@@ -1,4 +1,11 @@
-import { Dispatch, SetStateAction, createContext, useContext, useState } from 'react';
+import {
+  Dispatch,
+  SetStateAction,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import fileDownload from 'js-file-download';
 
 import { ChordBeatType, LyricMeasureType, Measure, SongExport } from './types';
@@ -55,7 +62,7 @@ const SongContext = createContext<{
 });
 
 const SongProvider = ({ children }: { children: React.ReactNode }) => {
-  const { save } = useDatabase();
+  const { save, selectedSong } = useDatabase();
   const [songName, setSongName] = useState('');
   const [artist, setArtist] = useState('');
   const [key, setKey] = useState('');
@@ -223,6 +230,12 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     setChords([]);
     setSectionNames([]);
   };
+
+  useEffect(() => {
+    if (selectedSong) {
+      importSongFromJson(selectedSong.song_data);
+    }
+  }, [selectedSong]);
 
   return (
     <SongContext.Provider

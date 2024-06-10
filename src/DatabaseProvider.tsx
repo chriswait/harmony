@@ -13,12 +13,14 @@ const DatabaseContext = createContext<{
   setSelectedSongId: React.Dispatch<React.SetStateAction<number | undefined>>;
   save: (song_data: SongExport) => Promise<void>;
   deleteSong: (songId: number) => Promise<void>;
+  selectedSong?: DatabaseSongType;
 }>({
   songs: [],
   selectedSongId: undefined,
   setSelectedSongId: () => {},
   save: async () => {},
   deleteSong: async () => {},
+  selectedSong: undefined,
 });
 
 type DatabaseSongType = {
@@ -29,11 +31,15 @@ type DatabaseSongType = {
 const DatabaseProvider = ({ children }: { children: React.ReactNode }) => {
   const [songs, setSongs] = useState<DatabaseSongType[]>([]);
   const [selectedSongId, setSelectedSongId] = useState<number>();
+  const selectedSong = songs.find(({ id }) => id === selectedSongId);
 
   const fetchSongs = async () => {
     const { data } = await supabase.from(SONG_COLLECTION_NAME).select();
     if (data) {
       setSongs(data);
+      if (!selectedSongId) {
+        setSelectedSongId(data[0].id);
+      }
     } else {
       setSongs([]);
     }
@@ -62,6 +68,7 @@ const DatabaseProvider = ({ children }: { children: React.ReactNode }) => {
         songs,
         selectedSongId,
         setSelectedSongId,
+        selectedSong,
         save,
         deleteSong,
       }}
