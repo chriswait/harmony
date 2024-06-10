@@ -1,3 +1,4 @@
+import fileDownload from 'js-file-download';
 import {
   Dispatch,
   SetStateAction,
@@ -6,10 +7,16 @@ import {
   useEffect,
   useState,
 } from 'react';
-import fileDownload from 'js-file-download';
 
-import { ChordBeatType, LyricMeasureType, Measure, SongExport, Timing } from './types';
 import { useDatabase } from './DatabaseProvider';
+import {
+  ChordBeatType,
+  LyricMeasureType,
+  Measure,
+  Section,
+  SongExport,
+  Timing,
+} from './types';
 
 const sortByTiming = (thing1: { timing?: Timing }, thing2: { timing?: Timing }) => {
   if (thing1.timing!.section > thing2.timing!.section) return 1;
@@ -38,9 +45,9 @@ const SongContext = createContext<{
   lyrics: LyricMeasureType[];
   setLyrics: Dispatch<SetStateAction<LyricMeasureType[]>>;
   sectionMeasures: Measure[][];
-  sectionNames: string[];
-  setSectionNames: Dispatch<SetStateAction<string[]>>;
-  setSectionName: (sectionIndex: number, sectionName: string) => void;
+  sections: Section[];
+  createSection: (name: string, parentId?: string) => void;
+  setSectionName: (sectionId: string, sectionName: string) => void;
   beatsPerMeasure: number;
   setBeatsPerMeasure: Dispatch<SetStateAction<number>>;
   setChord: (section: number, measure: number, beat: number, chordName: string) => void;
@@ -62,8 +69,8 @@ const SongContext = createContext<{
   lyrics: [],
   setLyrics: () => {},
   sectionMeasures: [],
-  sectionNames: ['Intro'],
-  setSectionNames: () => {},
+  sections: [],
+  createSection: () => {},
   setSectionName: () => {},
   beatsPerMeasure: 0,
   setBeatsPerMeasure: () => {},
@@ -82,7 +89,7 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
   const [artist, setArtist] = useState('');
   const [key, setKey] = useState('');
   const [beatsPerMeasure, setBeatsPerMeasure] = useState<number>(4);
-  const [sectionNames, setSectionNames] = useState<string[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [chords, setChords] = useState<ChordBeatType[]>([]);
   const [lyrics, setLyrics] = useState<LyricMeasureType[]>([]);
 
@@ -116,10 +123,23 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     setChords(newChords);
   };
 
-  const setSectionName = (sectionIndex: number, sectionName: string) => {
-    setSectionNames(
-      sectionNames.map((name, index) => (index === sectionIndex ? sectionName : name)),
+  const setSectionName = (sectionId: string, sectionName: string) => {
+    setSections(
+      sections.map((section) =>
+        section.id === sectionId ? { ...section, name: sectionName } : section,
+      ),
     );
+  };
+
+  const createSection = (name: string, parentId?: string) => {
+    setSections([
+      ...sections,
+      {
+        id: crypto.randomUUID(),
+        name,
+        parentId,
+      },
+    ]);
   };
 
   const setLyric = (section: number, measure: number, content: string) => {
@@ -146,11 +166,13 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     setLyrics(newLyrics);
   };
 
-  const sectionMeasures: Measure[][] = [];
-  for (let sectionIndex = 0; sectionIndex < sectionNames.length; sectionIndex++) {
+  const sectionMeasures: Measure[][] = sections.map((section, sectionIndex) => {
     const measures: Measure[] = [];
+    const parentSectionIndex = section.parentId
+      ? sections.findIndex((parentSection) => parentSection.id === section.parentId)
+      : sectionIndex;
     const sectionChords = chords.filter(
-      (chord) => chord.timing?.section === sectionIndex,
+      (chord) => chord.timing?.section === parentSectionIndex,
     );
     const lastSectionChord =
       sectionChords.length === 0 ? undefined : sectionChords[sectionChords.length - 1];
@@ -162,7 +184,7 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
         const match = chords.find(
           ({ timing }) =>
             timing &&
-            timing.section === sectionIndex &&
+            timing.section === parentSectionIndex && // grab chords from parent section
             timing.measure === measureIndex &&
             timing.beat === beatIndex,
         );
@@ -175,12 +197,12 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
       }
       const lyric = lyrics.find(
         ({ timing }) =>
-          timing?.section === sectionIndex && timing.measure === measureIndex,
+          timing?.section === sectionIndex && timing.measure === measureIndex, // grab lyrics from current section
       );
       measures.push({ chordBeats: beats, lyric });
     }
-    sectionMeasures.push(measures);
-  }
+    return measures;
+  });
 
   const songExport: SongExport = {
     songName,
@@ -189,7 +211,7 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     beatsPerMeasure,
     lyrics,
     chords,
-    sectionNames,
+    sections,
   };
 
   const exportSongAsJson = () => {
@@ -213,7 +235,7 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     setKey(songObject.key);
     setBeatsPerMeasure(songObject.beatsPerMeasure);
     setChords(songObject.chords);
-    setSectionNames(songObject.sectionNames);
+    setSections(songObject.sections);
   };
 
   const initialise = () => {
@@ -223,7 +245,7 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     setBeatsPerMeasure(4);
     setLyrics([]);
     setChords([]);
-    setSectionNames([]);
+    setSections([]);
   };
 
   useEffect(() => {
@@ -248,8 +270,8 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
         lyrics,
         setLyrics,
         sectionMeasures,
-        sectionNames,
-        setSectionNames,
+        sections,
+        createSection,
         setSectionName,
         setChord,
         setLyric,

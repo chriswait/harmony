@@ -1,8 +1,14 @@
+export type Section = {
+  id: string;
+  name: string;
+  parentId: typeof Section.id;
+};
+
 export type Timing = {
-    section: number;
-    measure: number;
-    beat?: number;
-}
+  section: number;
+  measure: number;
+  beat?: number;
+};
 
 export type Measure = {
   chordBeats: ChordBeatType[];
@@ -25,5 +31,6 @@ export type SongExport = {
   beatsPerMeasure: number;
   chords: ChordBeatType[];
   lyrics: LyricMeasureType[];
-  sectionNames: string[];
+  // sectionNames: string[];
+  sections: Section[];
 };

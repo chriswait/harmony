@@ -1,9 +1,10 @@
-import { Box, Button, Grid, Input } from '@chakra-ui/react';
+import { AddIcon, LinkIcon } from '@chakra-ui/icons';
+import { Box, Button, Flex, Grid, Input } from '@chakra-ui/react';
 
-import Beat from './Beat';
-import { useTheme } from './ThemeProvider';
-import { useSong } from './SongProvider';
 import { useEffect, useRef, useState } from 'react';
+import Beat from './Beat';
+import { useSong } from './SongProvider';
+import { useTheme } from './ThemeProvider';
 
 const LyricInput = ({ value, onChange }: React.InputHTMLAttributes<HTMLInputElement>) => {
   const MAX_SIZE = 16;
@@ -45,24 +46,37 @@ const SongGrid = () => {
     setChord,
     setLyric,
     sectionMeasures,
-    sectionNames,
-    setSectionNames,
+    sections,
+    createSection,
     setSectionName,
     beatsPerMeasure,
   } = useSong();
   return (
     <>
-      {sectionNames.map((sectionName, sectionIndex) => {
+      {sections.map((section, sectionIndex) => {
         const measures = sectionMeasures[sectionIndex];
         return (
-          <Box key={`section-${sectionIndex}`} mb={4}>
-            <Input
-              size="lg"
-              placeholder="Section name e.g Intro, A, Verse 1"
-              value={sectionName}
-              onChange={(event) => setSectionName(sectionIndex, event.target.value)}
-              borderRadius={0}
-            />
+          <Box key={`section-${section.id}`} mb={4}>
+            <Flex justifyContent={'space-between'}>
+              <Input
+                size="lg"
+                placeholder="Section name e.g Intro, A, Verse 1"
+                value={section.name}
+                onChange={(event) => setSectionName(section.id, event.target.value)}
+                borderRadius={0}
+              />
+              <Button
+                onClick={() =>
+                  createSection(
+                    section.name + ' (Copy)',
+                    section.parentId ? section.parentId : section.id,
+                  )
+                }
+                rightIcon={<LinkIcon />}
+              >
+                Clone
+              </Button>
+            </Flex>
             <Grid
               gridTemplateColumns={`repeat(${Math.pow(2, zoom)}, 1fr)`}
               gridTemplateRows="auto"
@@ -103,8 +117,8 @@ const SongGrid = () => {
           </Box>
         );
       })}
-      <Button onClick={() => setSectionNames([...sectionNames, ''])}>
-        Add Section +
+      <Button onClick={() => createSection('New section')} rightIcon={<AddIcon />}>
+        Add Section
       </Button>
     </>
   );
