@@ -11,15 +11,22 @@ const theme = extendTheme({ config });
 const ThemeContext = createContext<{
   zoom: number;
   setZoom: React.Dispatch<React.SetStateAction<number>>;
+  isEditing: boolean;
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
 }>({
   zoom: 1,
   setZoom: () => {},
+  isEditing: false,
+  setIsEditing: () => {},
 });
 const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [zoom, setZoom] = useState(2);
+  const [isEditing, setIsEditing] = useState(true);
   return (
     <ChakraProvider resetCSS theme={theme}>
-      <ThemeContext.Provider value={{ zoom, setZoom }}>{children}</ThemeContext.Provider>
+      <ThemeContext.Provider value={{ zoom, setZoom, isEditing, setIsEditing }}>
+        {children}
+      </ThemeContext.Provider>
     </ChakraProvider>
   );
 };

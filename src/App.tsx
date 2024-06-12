@@ -27,7 +27,7 @@ const App = () => {
     <>
       <NavBar />
       <header>
-        <Container maxW={'container.lg'} mb={4}>
+        <Container maxW={'container.lg'} mt={20} mb={[4, 8, 16]}>
           <Flex direction={['column', 'row']} gap={[2, 4, 8]}>
             <Box flex={1}>
               <FormControl mb={2}>

@@ -12,8 +12,11 @@ import {
   DrawerHeader,
   DrawerOverlay,
   Flex,
+  FormControl,
+  FormLabel,
   IconButton,
   Spacer,
+  Switch,
   useDisclosure,
 } from '@chakra-ui/react';
 import { AddIcon, HamburgerIcon, MinusIcon, SearchIcon } from '@chakra-ui/icons';
@@ -27,10 +30,10 @@ const NavBar = () => {
   const { exportSongAsJson, saveSongToDatabase } = useSong();
   const { selectedSongId, deleteSong } = useDatabase();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { zoom, setZoom } = useTheme();
+  const { zoom, setZoom, isEditing, setIsEditing } = useTheme();
   const btnRef = useRef<HTMLButtonElement>(null);
   return (
-    <Box>
+    <Box position={'fixed'} w={'full'} top={0} bg={'black'} zIndex={1}>
       <Container maxW={'container.xl'} mb={2} p={2}>
         <Flex align={'center'} gap={2}>
           <IconButton
@@ -41,6 +44,18 @@ const NavBar = () => {
           >
             Open
           </IconButton>
+          <Box>
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="edit" mb="0">
+                Edit
+              </FormLabel>
+              <Switch
+                id="edit"
+                isChecked={isEditing}
+                onChange={(event) => setIsEditing(event.target.checked)}
+              />
+            </FormControl>
+          </Box>
           <Spacer />
           <ButtonGroup isAttached variant="outline" alignItems={'center'} mr={[2, 4, 6]}>
             <SearchIcon boxSize={5} mr={2} />
