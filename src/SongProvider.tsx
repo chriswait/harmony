@@ -7,12 +7,15 @@ import {
   useEffect,
   useState,
 } from 'react';
+import { Key } from 'tonal';
+import type { KeyScale } from '@tonaljs/key';
 
 import { useDatabase } from './DatabaseProvider';
 import {
   ChordBeatType,
   LyricMeasureType,
   Measure,
+  Mode,
   Section,
   SongExport,
   Timing,
@@ -38,8 +41,11 @@ const SongContext = createContext<{
   setSongName: Dispatch<SetStateAction<string>>;
   artist: string;
   setArtist: Dispatch<SetStateAction<string>>;
-  key: string;
-  setKey: Dispatch<SetStateAction<string>>;
+  keyTonic: string;
+  setKeyTonic: Dispatch<SetStateAction<string>>;
+  keyMode: Mode;
+  setKeyMode: Dispatch<SetStateAction<Mode>>;
+  keyScale?: KeyScale;
   chords: ChordBeatType[];
   setChords: Dispatch<SetStateAction<ChordBeatType[]>>;
   lyrics: LyricMeasureType[];
@@ -62,8 +68,11 @@ const SongContext = createContext<{
   setSongName: () => {},
   artist: '',
   setArtist: () => {},
-  key: '',
-  setKey: () => {},
+  keyTonic: '',
+  setKeyTonic: () => {},
+  keyMode: 'major',
+  keyScale: undefined,
+  setKeyMode: () => {},
   chords: [],
   setChords: () => {},
   lyrics: [],
@@ -87,7 +96,8 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
   const { save, selectedSong } = useDatabase();
   const [songName, setSongName] = useState('');
   const [artist, setArtist] = useState('');
-  const [key, setKey] = useState('');
+  const [keyTonic, setKeyTonic] = useState('');
+  const [keyMode, setKeyMode] = useState<Mode>('major');
   const [beatsPerMeasure, setBeatsPerMeasure] = useState<number>(4);
   const [sections, setSections] = useState<Section[]>([]);
   const [chords, setChords] = useState<ChordBeatType[]>([]);
@@ -207,7 +217,8 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
   const songExport: SongExport = {
     songName,
     artist,
-    key,
+    keyTonic,
+    keyMode,
     beatsPerMeasure,
     lyrics,
     chords,
@@ -232,7 +243,8 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     setSongName(songObject.songName);
     setArtist(songObject.artist);
     setLyrics(songObject.lyrics);
-    setKey(songObject.key);
+    setKeyTonic(songObject.keyTonic);
+    setKeyMode(songObject.keyMode as Mode);
     setBeatsPerMeasure(songObject.beatsPerMeasure);
     setChords(songObject.chords);
     setSections(songObject.sections);
@@ -241,7 +253,8 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
   const initialise = () => {
     setSongName('');
     setArtist('');
-    setKey('');
+    setKeyTonic('');
+    setKeyMode('major');
     setBeatsPerMeasure(4);
     setLyrics([]);
     setChords([]);
@@ -254,6 +267,13 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [selectedSong]);
 
+  const keyScale =
+    keyMode === 'major'
+      ? Key.majorKey(keyTonic)
+      : keyMode === 'minor'
+        ? Key.minorKey(keyTonic).natural
+        : undefined;
+
   return (
     <SongContext.Provider
       value={{
@@ -261,8 +281,11 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
         setSongName,
         artist,
         setArtist,
-        key,
-        setKey,
+        keyTonic,
+        setKeyTonic,
+        keyMode,
+        setKeyMode,
+        keyScale,
         beatsPerMeasure,
         setBeatsPerMeasure,
         chords,

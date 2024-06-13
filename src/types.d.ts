@@ -1,3 +1,5 @@
+export type Mode = 'major' | 'minor';
+
 export type Section = {
   id: string;
   name: string;
@@ -27,7 +29,8 @@ export type LyricMeasureType = {
 export type SongExport = {
   songName: string;
   artist: string;
-  key: string;
+  keyTonic: string;
+  keyMode: Mode;
   beatsPerMeasure: number;
   chords: ChordBeatType[];
   lyrics: LyricMeasureType[];
