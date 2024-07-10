@@ -12,6 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { Chord, Scale } from 'tonal';
+import { useParams } from 'react-router-dom';
 
 import NavBar from './NavBar';
 import SongGrid from './SongGrid';
@@ -45,19 +46,16 @@ const KeySelect = () => {
   );
 };
 
-const KeyChord = ({ chord }: { chord: string }) => (
-  <Button
-    onClick={() => {
-      console.log(Chord.get(chord));
-    }}
-  >
-    {chord}
-  </Button>
-);
+const KeyChord = ({
+  chord,
+  onClick,
+}: {
+  chord: string;
+  onClick: React.MouseEventHandler<HTMLButtonElement>;
+}) => <Button onClick={onClick}>{chord}</Button>;
 
 const KeyScaleChords = () => {
   const { keyScale } = useSong();
-  // console.log(keyScale);
   return keyScale ? (
     <>
       <Heading as="h5" size="md" mb={4}>
@@ -70,10 +68,18 @@ const KeyScaleChords = () => {
           </Box>
         ))}
         {keyScale.triads.map((chord) => (
-          <KeyChord key={chord} chord={chord} />
+          <KeyChord
+            key={chord}
+            chord={chord}
+            onClick={() => console.log(Chord.get(chord))}
+          />
         ))}
         {keyScale.chords.map((chord) => (
-          <KeyChord key={chord} chord={chord} />
+          <KeyChord
+            key={chord}
+            chord={chord}
+            onClick={() => console.log(Chord.get(chord))}
+          />
         ))}
       </Grid>
     </>
@@ -88,6 +94,7 @@ const App = () => {
     setArtist,
     beatsPerMeasure,
     setBeatsPerMeasure,
+    loadSongWithID,
   } = useSong();
   const [inputBeatsPerMeasure, setInputBeatsPerMeasure] = useState(
     beatsPerMeasure.toString(),
@@ -95,6 +102,10 @@ const App = () => {
   useEffect(() => {
     setInputBeatsPerMeasure(beatsPerMeasure.toString());
   }, [beatsPerMeasure]);
+  const { songId } = useParams();
+  useEffect(() => {
+    loadSongWithID(songId);
+  }, [songId]);
   return (
     <>
       <NavBar />

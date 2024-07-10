@@ -1,14 +1,7 @@
-import fileDownload from 'js-file-download';
-import {
-  Dispatch,
-  SetStateAction,
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
-import { Key } from 'tonal';
 import type { KeyScale } from '@tonaljs/key';
+import fileDownload from 'js-file-download';
+import { Dispatch, SetStateAction, createContext, useContext, useState } from 'react';
+import { Key } from 'tonal';
 
 import { useDatabase } from './DatabaseProvider';
 import {
@@ -18,23 +11,9 @@ import {
   Mode,
   Section,
   SongExport,
-  Timing,
 } from './types';
-
-const sortByTiming = (thing1: { timing?: Timing }, thing2: { timing?: Timing }) => {
-  if (thing1.timing!.section > thing2.timing!.section) return 1;
-  if (thing1.timing!.section < thing2.timing!.section) return -1;
-  if (thing1.timing!.section === thing2.timing!.section) {
-    if (thing1.timing!.measure > thing2.timing!.measure) return 1;
-    if (thing1.timing!.measure < thing2.timing!.measure) return -1;
-    if (thing1.timing!.measure === thing2.timing!.measure) {
-      if ((thing1.timing?.beat ?? 0) > (thing2.timing?.beat ?? 0)) return 1;
-      if ((thing1.timing?.beat ?? 0) < (thing2.timing?.beat ?? 0)) return -1;
-      return 0;
-    }
-  }
-  return 0;
-};
+import { sortByTiming } from './util';
+import { useNavigate } from 'react-router-dom';
 
 const SongContext = createContext<{
   songName: string;
@@ -61,8 +40,10 @@ const SongContext = createContext<{
   exportSongAsJson: () => void;
   parseImport: (songObjectJson: string) => SongExport | undefined;
   importSongFromJson: (songObject: SongExport) => void;
-  saveSongToDatabase: () => Promise<void>;
+  saveSongToDatabase: (id?: number) => Promise<void>;
+  createNewSong: (songName: string) => Promise<void>;
   initialise: () => void;
+  loadSongWithID: (id?: string) => void;
 }>({
   songName: '',
   setSongName: () => {},
@@ -89,11 +70,14 @@ const SongContext = createContext<{
   parseImport: () => undefined,
   importSongFromJson: () => {},
   saveSongToDatabase: async () => {},
+  createNewSong: async () => {},
   initialise: () => {},
+  loadSongWithID: () => {},
 });
 
 const SongProvider = ({ children }: { children: React.ReactNode }) => {
-  const { save, selectedSong } = useDatabase();
+  const navigate = useNavigate();
+  const { save, songs } = useDatabase();
   const [songName, setSongName] = useState('');
   const [artist, setArtist] = useState('');
   const [keyTonic, setKeyTonic] = useState('');
@@ -229,8 +213,6 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     fileDownload(JSON.stringify(songExport), `${songName}-${artist}.json`);
   };
 
-  const saveSongToDatabase = async () => save(songExport);
-
   const parseImport = (songObjectJson: string): SongExport | undefined => {
     const songObject = JSON.parse(songObjectJson);
     if (songObject && songObject.songName) {
@@ -261,11 +243,41 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
     setSections([]);
   };
 
-  useEffect(() => {
-    if (selectedSong) {
-      importSongFromJson(selectedSong.song_data);
+  const saveSongToDatabase = async (id?: number) => {
+    const result = await save(songExport, id);
+    if (result.status === 201 && result.data && result.data.length > 0) {
+      navigate(`/${result.data[0].id}`);
     }
-  }, [selectedSong]);
+  };
+
+  const createNewSong = async (songName: string) => {
+    const result = await save({
+      songName,
+      artist: '',
+      keyTonic: '',
+      keyMode: 'major',
+      beatsPerMeasure: 4,
+      lyrics: [],
+      chords: [],
+      sections: [],
+    });
+    if (result.status === 201 && result.data && result.data.length > 0) {
+      navigate(`/${result.data[0].id}`);
+    }
+  };
+
+  const loadSongWithID = (id?: string) => {
+    let matchingSong;
+    if (id) {
+      matchingSong = songs.find((song) => song.id === parseInt(id, 10));
+    }
+    if (matchingSong) {
+      importSongFromJson(matchingSong.song_data);
+    } else {
+      initialise();
+      navigate('/');
+    }
+  };
 
   const keyScale =
     keyMode === 'major'
@@ -302,7 +314,9 @@ const SongProvider = ({ children }: { children: React.ReactNode }) => {
         parseImport,
         importSongFromJson,
         saveSongToDatabase,
+        createNewSong,
         initialise,
+        loadSongWithID,
       }}
     >
       {children}
