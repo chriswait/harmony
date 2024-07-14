@@ -1,4 +1,10 @@
-import { useRef, useState } from 'react';
+import {
+  AddIcon,
+  DeleteIcon,
+  HamburgerIcon,
+  MinusIcon,
+  SearchIcon,
+} from '@chakra-ui/icons';
 import {
   Box,
   Button,
@@ -14,6 +20,7 @@ import {
   Flex,
   FormControl,
   FormLabel,
+  Heading,
   IconButton,
   Input,
   List,
@@ -29,21 +36,18 @@ import {
   Switch,
   useDisclosure,
 } from '@chakra-ui/react';
-import {
-  AddIcon,
-  DeleteIcon,
-  HamburgerIcon,
-  MinusIcon,
-  SearchIcon,
-} from '@chakra-ui/icons';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { useDatabase } from './DatabaseProvider';
-import { useTheme } from './ThemeProvider';
 import { useSong } from './SongProvider';
+import { useTheme } from './ThemeProvider';
+import WarmupModalContent from './Warmup';
 
 const NavBar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  console.log(location);
   const { songId } = useParams();
   const { exportSongAsJson, saveSongToDatabase, createNewSong } = useSong();
   const { songs, deleteSong } = useDatabase();
@@ -57,9 +61,15 @@ const NavBar = () => {
     onOpen: modalOnOpen,
     onClose: modalOnClose,
   } = useDisclosure();
+  const {
+    isOpen: warmupModalIsOpen,
+    onOpen: warmupModalOnOpen,
+    onClose: warmupModalOnClose,
+  } = useDisclosure();
   const { zoom, setZoom, isEditing, setIsEditing } = useTheme();
   const btnRef = useRef<HTMLButtonElement>(null);
   const [newSongName, setNewSongName] = useState('');
+  const initialRef = useRef(null);
   return (
     <>
       <Box position={'fixed'} w={'full'} top={0} bg={'black'} zIndex={1}>
@@ -128,7 +138,7 @@ const NavBar = () => {
             <DrawerCloseButton />
             <DrawerHeader>🎶 Harmony Club 🎶</DrawerHeader>
             <DrawerBody>
-              <Box mb={8}>
+              <Flex rowGap={4} flexDir="column" mb={4}>
                 <Button
                   width="100%"
                   rightIcon={<AddIcon />}
@@ -139,7 +149,17 @@ const NavBar = () => {
                 >
                   New Song!
                 </Button>
-              </Box>
+                <Button
+                  width="100%"
+                  colorScheme="green"
+                  onClick={() => warmupModalOnOpen()}
+                >
+                  Warmup
+                </Button>
+              </Flex>
+              <Heading size="md" mb={2}>
+                Songs:
+              </Heading>
               <List spacing={2}>
                 {songs.map((song) => (
                   <ListItem
@@ -192,7 +212,7 @@ const NavBar = () => {
           </DrawerContent>
         </Drawer>
       </Box>
-      <Modal isOpen={modalIsOpen} onClose={modalOnClose}>
+      <Modal isOpen={modalIsOpen} onClose={modalOnClose} initialFocusRef={initialRef}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>New Song!</ModalHeader>
@@ -201,6 +221,7 @@ const NavBar = () => {
             <FormControl>
               <FormLabel>Name</FormLabel>
               <Input
+                ref={initialRef}
                 value={newSongName}
                 onChange={(event) => setNewSongName(event.target.value)}
               />
@@ -208,6 +229,7 @@ const NavBar = () => {
           </ModalBody>
           <ModalFooter>
             <Button
+              type="submit"
               colorScheme="blue"
               mr={3}
               onClick={async () => {
@@ -219,6 +241,14 @@ const NavBar = () => {
             </Button>
           </ModalFooter>
         </ModalContent>
+      </Modal>
+      <Modal
+        isOpen={warmupModalIsOpen}
+        onClose={warmupModalOnClose}
+        initialFocusRef={initialRef}
+        size="full"
+      >
+        <WarmupModalContent />
       </Modal>
     </>
   );
